@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Use correct character set. -->
+  <meta charset="utf-8">
+  <!-- Tell IE to use the latest, best version. -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!-- Make the application on mobile take up the full browser screen and disable user scaling. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+  <title>Hello World!</title>
+  <script src="Build/Cesium/Cesium.js"></script>
+  <script src="SMUtils.js"></script>
+  <script src="SMTracks.js"></script>
+  <script src="SMGraph.js"></script>
+  <script src="SMBoats.js"></script>
+  <script src="SMRaces.js"></script>
+  <script src="SMGadgets.js"></script>
+  <link rel="stylesheet" type="text/css" href="libs/datatables.min.css"/>
+  <link rel="stylesheet" type="text/css" href="libs/jquery-ui.theme.min.css"/>
+  <link rel="stylesheet" type="text/css" href="libs/jquery-ui.structure.min.css"/>
+  <link rel="stylesheet" type="text/css" href="css/test.css"/>
+  <script src="libs/jquery-3.3.1.min.js"></script>
+  <script src="libs/jquery-ui.min.js"></script>
+  <script src="libs/underscore-min.js"></script>
+  <script src="libs/datatables.min.js"></script>
+  <!-- widgets -->
+  <script>
+  const SMHeaders = new Headers();
+  SMHeaders.append('Content-Type','application/json');
+  // postHeaders.append('Access-Control-Allow-Origin','http://localhost:8080');
+  SMHeaders.append('Access-Control-Request-Headers','X-Custom-Header');
+  const urlApi = 'http://localhost:8085/api';
+  let tbTableBoats;
+  let tbTableGadgets;
+  let tbTableRaces;
+
+    $(document).ready( function() {
+      // Инициализация виджетов JQuery UI
+      // Главная кнопка меню, левый верхний угол
+      $( '#bt_mainButton' ).button();
+      // Кнопка добавления лодки на форме под таблицей лодок
+      $( '#bt_addBoat' ).button();
+      // Кнопка добавления трекера на форме под таблицей трекеров
+      $( '#bt_addGadget').button();
+      // Кнопка добавления гонки на форме под таблицей гонок
+      $( '#bt_addRace').button();
+      $( '#bt_mainButton' ).click( function( event ) {
+        $( '#ul_mainMenu' ).toggle(); // Показать/скрыть главное меню
+      });
+    });
+    // Инициализация виджета таблицы со списком лодок
+    $(document).ready( function() {
+      tbTableBoats = $('#tb_tableBoats').DataTable({
+        columns: [
+          { title: 'ID'},
+          { title: 'Name'},
+          { title: 'Type'},
+          { title: 'About'},
+          { title: 'Manage'}
+        ]
+      });
+      // Добавление новой лодки в базу
+      $('#bt_addBoat').on('click', function(){
+        const data = {
+          boatName: $('#inBoatName').val(),
+          boatType: $('#inBoatType').val(),
+          boatAbout: $('#inBoatAbout').val()
+        };
+        SMBoats.add(data, tbTableBoats);
+      });
+    });
+    //Инициализация виджета таблицы со списком трекеров
+    $(document).ready( function() {
+      tbTableGadgets = $('#tb_tableGadgets').DataTable({
+        columns: [
+          { title: 'ID' },
+          { title: 'IMEI' },
+          { title: 'Phone' },
+          { title: 'Name' },
+          { title: 'Type' },
+          { title: 'About' },
+          { title: 'Manage' }
+        ]
+      });
+      // Добавление нового трекера в базу
+      $('#bt_addGadget').on('click', function(){
+        const data = {
+          gadgetName: $('#inGadgetName').val(),
+          gadgetIMEI: $('#inGadgetIMEI').val(),
+          gadgetPhone: $('#inGadgetPhone').val(),
+          gadgetType: $('#inGadgetType').val(),
+          gadgetAbout: $('#inGadgetAbout').val()
+        };
+        SMGadgets.add(data, tbTableGadgets);
+      });
+    });
+    //Инициализация виджета таблицы со списком гонок
+    $(document).ready( function() {
+      tbTableRaces = $('#tb_tableRaces').DataTable({
+        columns: [
+          { title: 'ID' },
+          { title: 'Name' },
+          { title: 'Begin' },
+          { title: 'End' },
+          { title: 'Start' },
+          { title: 'Finish' },
+          { title: 'Location' },
+          { title: 'About' },
+          { title: 'Manage'}
+        ]
+      });
+      // Добавление новой гонки в базу
+      $('#bt_addRace').on('click', function(){
+        const data = {
+          raceName: $('#inRaceName').val(),
+          raceBegin: $('#inRaceBegin').val(),
+          raceEnd: $('#inRaceEnd').val(),
+          raceStart: $('#inRaceStart').val(),
+          raceFinish: $('#inRaceFinish').val(),
+          raceLocation: $('#inRaceLocation').val(),
+          raceAbout: $('#inRaceAbout').val()
+        };
+        SMRaces.add(data, tbTableRaces);
+      });
+    });
+
+    // Инициализация виджета главного меню
+    $(document).ready( function() {
+      $('#ul_mainMenu').menu({
+        select: function( event, ui) {
+          // Показать список трекеров
+          if(ui.item[0].id == 'li_gadgets'){
+            // Для управления этой таблицей нужно скрыть остальные
+            $('.div_tables').hide();
+            SMGadgets.getall(tbTableGadgets);
+            $('#div_tableGadgets').show();
+          }
+          // Показать список гонок
+          if(ui.item[0].id == 'li_races'){
+            $('.div_tables').hide();
+            SMRaces.getall(tbTableRaces);
+            $('#div_tableRaces').show();
+          }
+          // Показать список лодок
+          if(ui.item[0].id == 'li_boats'){
+            // Для управления этой таблицей нужно скрыть остальные
+            $('.div_tables').hide();
+            SMBoats.getall(tbTableBoats);
+            $('#div_tableBoats').show();
+          }
+          //Скрыть меню, после выбора какого-либо пункта
+          $('#ul_mainMenu').hide();
+        }
+      }).hide();
+    });
+    // Обработка события click на кнопке удаления записи в строке таблицы
+    function clickBtDel(event){
+      const typeTable = event.currentTarget.dataset.tableName;
+      const id = event.target.dataset.rowId;
+      // Выбор функции удаления в зависимости от типа таблицы
+      // Некоторые "базовые таблицы" - лодки, трекера, гонки - могут по разному
+      // обрабатывать событие удаления
+      if(typeTable == 'SMBoats'){
+        SMBoats.remove(id, tbTableBoats);
+      } else if (typeTable == 'SMRaces') {
+        SMRaces.remove(id, tbTableRaces);
+      } else if (typeTable == 'SMGadgets') {
+        SMGadgets.remove(id, tbTableGadgets);
+      }
+    }
+  </script>
+  <style>
+      @import url(./Build/Cesium/Widgets/widgets.css);
+      html, body, #cesiumContainer {
+          width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+      }
+  </style>
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <div id="div_mainMenu">
+    <button id="bt_mainButton" >=</button>
+    <ul id="ul_mainMenu" class="widget">
+      <li id="li_gadgets">
+        <div>
+          Gadgets
+        </div>
+      </li>
+      <li id="li_boats">
+        <div>
+          Boats
+        </div>
+      </li>
+      <li id="li_races">
+        <div>
+          Races
+        </div>
+      </li>
+    </ul>
+  </div>
+  <div id="div_tableBoats" class="div_tables">
+    <table id="tb_tableBoats" class="display tb_info" ></table>
+    <div id="div_editBoat">
+      <input id="inBoatName" name="inBoatName" type="text" placeholder="Name">
+      <input id="inBoatType" name="inBoatType" type="text" placeholder="Type">
+      <input id="inBoatAbout" name="inBoatAbout" type="text" placeholder="About">
+      <button id="bt_addBoat" class="buttons">addBoat</button>
+    </div>
+  </div>
+  <div id="div_tableGadgets" class="div_tables">
+    <table id="tb_tableGadgets" class="display tb_info" ></table>
+    <div id="div_editGadget">
+      <input id="inGadgetIMEI" name="inGadgetIMEI" type="text" placeholder="IMEI">
+      <input id="inGadgetPhone" name="inGadgetPhone" type="text" placeholder="Phone">
+      <input id="inGadgetName" name="inGadgetName" type="text" placeholder="Name">
+      <input id="inGadgetType" name="inGadgetType" type="text" placeholder="Type">
+      <input id="inGadgetAbout" name="inGadgetAbout" type="text" placeholder="About">
+      <button id="bt_addGadget" class="buttons">addGadget</button>
+    </div>
+  </div>
+  <div id="div_tableRaces" class="div_tables">
+    <table id="tb_tableRaces" class="display tb_info" ></table>
+    <div id="div_editRace">
+      <input id="inRaceName" name="inRaceName" type="text" placeholder="name">
+      <input id="inRaceBegin" name="inRaceBegin" type="text" placeholder="begin">
+      <input id="inRaceEnd" name="inRaceEnd" type="text" placeholder="end">
+      <input id="inRaceStart" name="inRaceStart" type="text" placeholder="start">
+      <input id="inRaceFinish" name="inRaceFinish" type="text" placeholder="finish">
+      <input id="inRaceLocation" name="inRaceLocation" type="text" placeholder="location">
+      <input id="inRaceAbout" name="inRaceAbout" type="text" placeholder="about">
+      <button id="bt_addRace" class="buttons">addRace</button>
+    </div>
+  </div>
+  <script>
+
+  const viewer = new Cesium.Viewer('cesiumContainer');
+  </script>
+</body>
+</html>

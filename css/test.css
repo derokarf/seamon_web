@@ -1,0 +1,67 @@
+#tableContainer {
+  position: absolute;
+  width: 50%;
+  height: 80%;
+  z-index: 10;
+  top: 40px;
+  left: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 10px 5px 5px black;
+  padding: 10px;
+  display: none;
+}
+#cesiumContainer {
+  z-index: 5;
+}
+#div_mainMenu {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 10;
+}
+
+#bt_mainButton {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+}
+
+.ui-menu {
+   width: 150px;
+ }
+
+#ul_mainMenu {
+  position: absolute;
+  top: 40px;
+  left: 20px;
+  z-index: 20;
+}
+
+.div_tables {
+  display: none;
+  position: absolute;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 10px 5px 5px black;
+  padding: 10px;
+}
+
+.tb_info {
+  width: 100%
+}
+
+#div_tableBoats {
+  top: 40px;
+  left: 20px;
+}
+
+#div_tableGadgets {
+  top: 40px;
+  left: 20px;
+}
+
+#div_tableRaces {
+  top: 40px;
+  left: 20px;
+}
