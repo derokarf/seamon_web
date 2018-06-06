@@ -18,6 +18,28 @@ const SMRaces = (function() {
         })
         .catch(err => console.log(err));
     },
+    /** @description Загружает конфигурацию гонки
+    * @param {tbRaceConfig} Объект таблицы GUI, контейнера данных
+    */
+    getconfig(tbRaceConfig, idRace) {
+      const data = {
+        idrow: idRace
+      };
+      fetch(`${urlApi}/races/getconfig`, {
+        method: 'POST',
+        mode: 'cors',
+        headers: SMHeaders,
+        body: JSON.stringify(data)
+      })
+        .then(res => res.json())
+        .then(dataSet => {
+          console.log(dataSet);
+          tbRaceConfig.clear();
+          tbRaceConfig.rows.add(SMUtils.objArr2arrArr(dataSet, 'SMRaceConfig', [true, false, true]));
+          tbRaceConfig.draw();
+        })
+        .catch(err => console.log(err));
+    },
     /** @description Удаляет запись о гонке
     * @param {id} Id записи для удаления
     * @param {tbRaces} Объект таблицы GUI

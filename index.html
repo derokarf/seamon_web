@@ -30,9 +30,10 @@
   // postHeaders.append('Access-Control-Allow-Origin','http://localhost:8080');
   SMHeaders.append('Access-Control-Request-Headers','X-Custom-Header');
   const urlApi = 'http://localhost:8085/api';
-  let tbTableBoats;
-  let tbTableGadgets;
-  let tbTableRaces;
+  let tbBoats;
+  let tbGadgets;
+  let tbRaces;
+  let tbRaceConfig;
 
     $(document).ready( function() {
       // Инициализация виджетов JQuery UI
@@ -50,7 +51,7 @@
     });
     // Инициализация виджета таблицы со списком лодок
     $(document).ready( function() {
-      tbTableBoats = $('#tb_tableBoats').DataTable({
+      tbBoats = $('#tb_tableBoats').DataTable({
         columns: [
           { title: 'ID'},
           { title: 'Name'},
@@ -66,12 +67,12 @@
           boatType: $('#inBoatType').val(),
           boatAbout: $('#inBoatAbout').val()
         };
-        SMBoats.add(data, tbTableBoats);
+        SMBoats.add(data, tbBoats);
       });
     });
     //Инициализация виджета таблицы со списком трекеров
     $(document).ready( function() {
-      tbTableGadgets = $('#tb_tableGadgets').DataTable({
+      tbGadgets = $('#tb_tableGadgets').DataTable({
         columns: [
           { title: 'ID' },
           { title: 'IMEI' },
@@ -91,12 +92,12 @@
           gadgetType: $('#inGadgetType').val(),
           gadgetAbout: $('#inGadgetAbout').val()
         };
-        SMGadgets.add(data, tbTableGadgets);
+        SMGadgets.add(data, tbGadgets);
       });
     });
     //Инициализация виджета таблицы со списком гонок
     $(document).ready( function() {
-      tbTableRaces = $('#tb_tableRaces').DataTable({
+      tbRaces = $('#tb_tableRaces').DataTable({
         columns: [
           { title: 'ID' },
           { title: 'Name' },
@@ -120,7 +121,33 @@
           raceLocation: $('#inRaceLocation').val(),
           raceAbout: $('#inRaceAbout').val()
         };
-        SMRaces.add(data, tbTableRaces);
+        SMRaces.add(data, tbRaces);
+      });
+    });
+    //Инициализация виджета конфигурации гонки
+    $(document).ready( function(){
+      tbRaceConfig = $('#tb_raceConfig').DataTable({
+        columns: [
+          { title: 'ID' },
+          { title: 'Boat' },
+          { title: 'boat_id', visible: false, searchable: false },
+          { title: 'Gadget' },
+          { title: 'gadget_id', visible: false, searchable: false },
+          { title: 'Status' },
+          { title: 'status_id', visible: false, searchable: false },
+          { title: 'About' },
+          { title: 'Manage' }
+        ]
+      });
+      //Добавление нового участника (связки лодка-трекер-статус)
+      $('#bt_addRaceConfig').on('click', function(){
+        const data = {
+          raceConfigBoat: $('#inRaceConfigBoat').val(),
+          raceConfigGadget: $('#inRaceConfigGadget').val(),
+          raceConfigStatus: $('#inRaceConfigStatus').val(),
+          raceConfigAbout: $('#inRaceConfigAbout').val()
+        };
+        SMRaces.configAdd(data, tbRaceConfig);
       });
     });
 
@@ -132,20 +159,20 @@
           if(ui.item[0].id == 'li_gadgets'){
             // Для управления этой таблицей нужно скрыть остальные
             $('.div_tables').hide();
-            SMGadgets.getall(tbTableGadgets);
+            SMGadgets.getall(tbGadgets);
             $('#div_tableGadgets').show();
           }
           // Показать список гонок
           if(ui.item[0].id == 'li_races'){
             $('.div_tables').hide();
-            SMRaces.getall(tbTableRaces);
+            SMRaces.getall(tbRaces);
             $('#div_tableRaces').show();
           }
           // Показать список лодок
           if(ui.item[0].id == 'li_boats'){
             // Для управления этой таблицей нужно скрыть остальные
             $('.div_tables').hide();
-            SMBoats.getall(tbTableBoats);
+            SMBoats.getall(tbBoats);
             $('#div_tableBoats').show();
           }
           //Скрыть меню, после выбора какого-либо пункта
@@ -161,11 +188,25 @@
       // Некоторые "базовые таблицы" - лодки, трекера, гонки - могут по разному
       // обрабатывать событие удаления
       if(typeTable == 'SMBoats'){
-        SMBoats.remove(id, tbTableBoats);
+        SMBoats.remove(id, tbBoats);
       } else if (typeTable == 'SMRaces') {
-        SMRaces.remove(id, tbTableRaces);
+        SMRaces.remove(id, tbRaces);
       } else if (typeTable == 'SMGadgets') {
-        SMGadgets.remove(id, tbTableGadgets);
+        SMGadgets.remove(id, tbGadgets);
+      }
+    }
+    // Обработка события click на кнопке настройки записи (пример: настройка
+    // гонки) в строке таблицы
+    function clickBtConfig(event){
+      const typeTable = event.currentTarget.dataset.tableName;
+      const id = event.target.dataset.rowId;
+      // Выбор алгоритма насройки в зависимости от типа таблицы
+      if(typeTable == 'SMRaces'){
+        // Закрыть все остальные таблицы
+        $('.div_tables').hide();
+        SMRaces.getconfig(tbRaceConfig, id);
+        // Показать главное окно настройки конфигурации
+        $('#div_raceConfig').show();
       }
     }
   </script>
@@ -229,6 +270,16 @@
       <input id="inRaceLocation" name="inRaceLocation" type="text" placeholder="location">
       <input id="inRaceAbout" name="inRaceAbout" type="text" placeholder="about">
       <button id="bt_addRace" class="buttons">addRace</button>
+    </div>
+  </div>
+  <div id="div_raceConfig" class="div_tables">
+    <table id="tb_raceConfig" class="display tb_info"></table>
+    <div id="div_editRaceConfig">
+      <input id="inRaceConfigBoat" name="inRaceConfigBoat" type="text" placeholder="Boat"/>
+      <input id="inRaceConfigGadget" name="inRaceConfigGadget" type="text" placeholder="Gadget"/>
+      <input id="inRaceConfigStatus" name="inRaceConfigStatus" type="text" placeholder="Status"/>
+      <input id="inRaceConfigAbout" name="inRaceConfigAbout" type="text" placeholder="About"/>
+      <button id="bt_addRaceConfig" class="buttons">addRow</button>
     </div>
   </div>
   <script>

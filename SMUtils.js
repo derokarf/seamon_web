@@ -40,7 +40,7 @@ const SMUtils = (function() {
         //btManage
         if(listButtons[1]){
           codBt = `${codBt}<button data-row-id="${objArray[i].id}"
-            data-table-name="${typeTable}" onclick="clickBtManage(event)">...</button>`
+            data-table-name="${typeTable}" onclick="clickBtConfig(event)">...</button>`
         }
         //btDelete
         if(listButtons[2]){
