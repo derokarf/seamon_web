@@ -47,6 +47,24 @@
   padding: 10px;
 }
 
+.div_config {
+  display: none;
+  position: absolute;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 10px 5px 5px black;
+  padding: 10px;
+}
+
+.div_config_tables {
+  display: none;
+  position: absolute;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 10px 5px 5px black;
+  padding: 10px;
+}
+
 .tb_info {
   width: 100%
 }
@@ -70,5 +88,13 @@
   top:40px;
   left: 10px;
   height: 50%;
+  width: 45%;
 
+}
+
+#div_raceConfigBoats {
+  top: 20px;
+  left: 50%;
+  width: 45%;
+  height: 90%;
 }

@@ -33,7 +33,6 @@ const SMRaces = (function() {
       })
         .then(res => res.json())
         .then(dataSet => {
-          console.log(dataSet);
           tbRaceConfig.clear();
           tbRaceConfig.rows.add(SMUtils.objArr2arrArr(dataSet, 'SMRaceConfig', [true, false, true]));
           tbRaceConfig.draw();
@@ -56,6 +55,28 @@ const SMRaces = (function() {
       })
         .then(res => {
           this.getall(tbRaces);
+        })
+        .catch(err => console.log(err));
+    },
+    /** @description Получает список участвующих лодок
+    * @param {idRace} Id гонки
+    * @param {tbRaces} Объект таблицы GUI
+    */
+    getboats(idRace, tbBoats) {
+      const data = {
+        idrace: idRace
+      };
+      fetch(`${urlApi}/races/getboats`, {
+        method: 'POST',
+        mode: 'cors',
+        headers: SMHeaders,
+        body: JSON.stringify(data)
+      })
+        .then(res => res.json())
+        .then(dataSet => {
+          tbBoats.clear();
+          tbBoats.rows.add(SMUtils.objArr2arrArr_raw(dataSet));
+          tbBoats.draw();
         })
         .catch(err => console.log(err));
     },

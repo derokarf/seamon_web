@@ -18,6 +18,23 @@ const SMBoats = (function() {
         })
         .catch(err => console.log(err));
     },
+    // /** @description Загружает список всех лодок для простого списка
+    // * @param {tbBoats} Объект таблицы GUI, контейнера данных
+    // */
+    // getall_list(tbBoats) {
+    //   fetch(`${urlApi}/boats/getall`, {
+    //     method: 'GET',
+    //     mode: 'cors',
+    //     headers: SMHeaders
+    //   })
+    //     .then(res => res.json())
+    //     .then(dataSet => {
+    //       tbBoats.clear();
+    //       tbBoats.rows.add(SMUtils.objArr2arrArr(dataSet, 'SMBoatsList', [false, false, false]));
+    //       tbBoats.draw();
+    //     })
+    //     .catch(err => console.log(err));
+    // },
     /** @description Удаляет запись о лодке
     * @param {id} Id записи для удаления
     * @param {tbBoats} Объект таблицы GUI

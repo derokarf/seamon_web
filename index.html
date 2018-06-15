@@ -70,6 +70,35 @@
         SMBoats.add(data, tbBoats);
       });
     });
+    // Инициализация виджета таблицы со списком лодок для конфигурации гонки
+    $(document).ready( function() {
+      tbRaceConfigBoats = $('#tb_raceConfigBoats').DataTable({
+        columns: [
+          { title: 'ID' },
+          { title: 'Name' },
+          { title: 'Type' },
+          { title: 'About' },
+          { title: 'ID_Race', visible: false, searchable: false }
+        ],
+        createdRow: function ( row, data, index ) {
+          if(data[4] != null){
+            $(row).addClass('selected');
+          }
+        }
+      });
+      $('#tb_raceConfigBoats').on( 'click', 'tr', function(){
+        // Если этой лодки нет в гонке, то добавляем ее на панель конфигурации
+        // и закрываем таблицу выбора.
+        if ( !($(this).hasClass('selected')) ) {;
+          // Получаем данные гонки, имя записываем в видимое поле,
+          // id записываем в пользовательские данные элемента.
+          const rowBoat = tbRaceConfigBoats.row(this).data();
+          $('#inRaceConfigBoat').val(rowBoat[1]);
+          $('#inRaceConfigBoat').data('id_boat',rowBoat[0]);
+          $('#div_raceConfigBoats').hide();
+        }
+      });
+    });
     //Инициализация виджета таблицы со списком трекеров
     $(document).ready( function() {
       tbGadgets = $('#tb_tableGadgets').DataTable({
@@ -199,16 +228,29 @@
     // гонки) в строке таблицы
     function clickBtConfig(event){
       const typeTable = event.currentTarget.dataset.tableName;
-      const id = event.target.dataset.rowId;
+      const id = event.target.dataset.rowId; // Id гонки.
       // Выбор алгоритма насройки в зависимости от типа таблицы
       if(typeTable == 'SMRaces'){
         // Закрыть все остальные таблицы
         $('.div_tables').hide();
+        $('#div_raceConfig').data('id_race', id);
         SMRaces.getconfig(tbRaceConfig, id);
         // Показать главное окно настройки конфигурации
         $('#div_raceConfig').show();
       }
     }
+    // Настройка событий конфигурации гонки.
+    $(document).ready( function(){
+      // Обработка события click на поле выбора лодки для гонки.
+      $('#inRaceConfigBoat').on('click', (event) => {
+        // Показать таблицу лодок, оставив таблицу конфигурации гонки.
+        $('.div_tables').hide();
+        const idRace = $('#div_raceConfig').data('id_race');
+        SMRaces.getboats(idRace, tbRaceConfigBoats);
+        // Выбрать лодки и отметить, уже записанные на гонку
+        $('#div_raceConfigBoats').show();
+      });
+    });
   </script>
   <style>
       @import url(./Build/Cesium/Widgets/widgets.css);
@@ -272,15 +314,19 @@
       <button id="bt_addRace" class="buttons">addRace</button>
     </div>
   </div>
-  <div id="div_raceConfig" class="div_tables">
+  <div id="div_raceConfig" class="div_config">
     <table id="tb_raceConfig" class="display tb_info"></table>
     <div id="div_editRaceConfig">
-      <input id="inRaceConfigBoat" name="inRaceConfigBoat" type="text" placeholder="Boat"/>
-      <input id="inRaceConfigGadget" name="inRaceConfigGadget" type="text" placeholder="Gadget"/>
+      <input id="inRaceConfigBoat" name="inRaceConfigBoat" type="text" placeholder="Boat" readonly/>
+      <!-- <input id="inRaceConfigBoatBt" name="inRaceConfigBoatBt" type="button" value="="/> -->
+      <input id="inRaceConfigGadget" name="inRaceConfigGadget" type="text" placeholder="Gadget" readonly/>
       <input id="inRaceConfigStatus" name="inRaceConfigStatus" type="text" placeholder="Status"/>
       <input id="inRaceConfigAbout" name="inRaceConfigAbout" type="text" placeholder="About"/>
       <button id="bt_addRaceConfig" class="buttons">addRow</button>
     </div>
+  </div>
+  <div id="div_raceConfigBoats" class="div_config_tables">
+      <table id="tb_raceConfigBoats" class="display tb_info"></table>
   </div>
   <script>
 

@@ -47,7 +47,36 @@ const SMUtils = (function() {
           codBt = `${codBt}<button data-row-id="${objArray[i].id}"
             data-table-name="${typeTable}" onclick="clickBtDel(event)">x</button>`;
         }
-        tmp.push(codBt);
+        if(codBt != ''){
+          tmp.push(codBt);
+        }
+        arrArr.push(tmp);
+      }
+      return arrArr;
+    },
+    /** @description Конвертирует GPS координаты из формата градусы минуты секунды
+    /* в градусы double
+    /* @param {value} широта или долгода в "градусы минуты секунды"
+    /* @return {float} широта или долгота во float
+    */
+    latlng2deg (value) {
+      value += '';
+      const degrees = value.slice(0, value.indexOf('.') - 2);
+      const minutes = value.slice(value.indexOf('.') - 2);
+      return parseInt(degrees, 10) + (parseFloat(minutes, 10) / 60);
+    },
+    /** @description Конвертируем результат из массива объектов
+    * в "массив массивов" для DataTables
+    * @param {objArray} "Массив объектов"
+    * @return {array[][]} Возвращает двумерный массив, "массив массивов"
+    */
+    objArr2arrArr_raw (objArray) {
+      const arrArr = [];
+      for (let i = 0; i < objArray.length; i++) {
+        const tmp = [];
+        Object.keys(objArray[i]).forEach(key => {
+          tmp.push(objArray[i][key]);
+        });
         arrArr.push(tmp);
       }
       return arrArr;
