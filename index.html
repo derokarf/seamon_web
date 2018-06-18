@@ -34,6 +34,8 @@
   let tbGadgets;
   let tbRaces;
   let tbRaceConfig;
+  let tbRaceConfigBoats;
+  let tbRaceConfigGadgets;
 
     $(document).ready( function() {
       // Инициализация виджетов JQuery UI
@@ -81,7 +83,7 @@
           { title: 'ID_Race', visible: false, searchable: false }
         ],
         createdRow: function ( row, data, index ) {
-          if(data[4] != null){
+          if(data[data.length-1] != null){
             $(row).addClass('selected');
           }
         }
@@ -122,6 +124,37 @@
           gadgetAbout: $('#inGadgetAbout').val()
         };
         SMGadgets.add(data, tbGadgets);
+      });
+    });
+    // Инициализация виджета таблицы со списком трекеров для конфигурации гонки
+    $(document).ready( function() {
+      tbRaceConfigGadgets = $('#tb_raceConfigGadgets').DataTable({
+        columns: [
+          { title: 'ID' },
+          { title: 'Name' },
+          { title: 'IMEI' },
+          { title: 'Phone' },
+          { title: 'Type' },
+          { title: 'About' },
+          { title: 'ID_Race', visible: false, searchable: false }
+        ],
+        createdRow: function ( row, data, index ) {
+          if(data[data.length-1] != null){
+            $(row).addClass('selected');
+          }
+        }
+      });
+      $('#tb_raceConfigGadgets').on( 'click', 'tr', function(){
+        // Если этого трекера нет в гонке, то добавляем его на панель конфигурации
+        // и закрываем таблицу выбора.
+        if ( !($(this).hasClass('selected')) ) {;
+          // Получаем данные гонки, имя записываем в видимое поле,
+          // id записываем в пользовательские данные элемента.
+          const rowGadget = tbRaceConfigGadgets.row(this).data();
+          $('#inRaceConfigGadget').val(rowGadget[1]);
+          $('#inRaceConfigGadget').data('id_gadget',rowGadget[0]);
+          $('#div_raceConfigGadgets').hide();
+        }
       });
     });
     //Инициализация виджета таблицы со списком гонок
@@ -168,15 +201,37 @@
           { title: 'Manage' }
         ]
       });
+
+      // Обработка события click на поле выбора лодки для гонки.
+      $('#inRaceConfigBoat').on('click', (event) => {
+        // Показать таблицу лодок, оставив таблицу конфигурации гонки.
+        $('.div_tables').hide();
+        const idRace = $('#div_raceConfig').data('id_race');
+        SMRaces.getboats(idRace, tbRaceConfigBoats);
+        // Выбрать лодки и отметить, уже записанные на гонку
+        $('#div_raceConfigBoats').show();
+      });
+
+      // Обработка события click на поле выбора трекера для гонки.
+      $('#inRaceConfigGadget').on('click', (event) => {
+        // Показать таблицу трекеров, оставив таблицу конфигурации гонки.
+        $('.div_tables').hide();
+        const idRace = $('#div_raceConfig').data('id_race');
+        SMRaces.getgadgets(idRace, tbRaceConfigGadgets);
+        // Выбрать лодки и отметить, уже записанные на гонку
+        $('#div_raceConfigGadgets').show();
+      });
+
       //Добавление нового участника (связки лодка-трекер-статус)
       $('#bt_addRaceConfig').on('click', function(){
         const data = {
-          raceConfigBoat: $('#inRaceConfigBoat').val(),
-          raceConfigGadget: $('#inRaceConfigGadget').val(),
+          raceConfigIdRace: $('#div_raceConfig').data('id_race'),
+          raceConfigBoat: $('#inRaceConfigBoat').data('id_boat'),
+          raceConfigGadget: $('#inRaceConfigGadget').data('id_gadget'),
           raceConfigStatus: $('#inRaceConfigStatus').val(),
           raceConfigAbout: $('#inRaceConfigAbout').val()
         };
-        SMRaces.configAdd(data, tbRaceConfig);
+        SMRaces.addConfig(data, tbRaceConfig);
       });
     });
 
@@ -223,7 +278,7 @@
       } else if (typeTable == 'SMGadgets') {
         SMGadgets.remove(id, tbGadgets);
       }
-    }
+    };
     // Обработка события click на кнопке настройки записи (пример: настройка
     // гонки) в строке таблицы
     function clickBtConfig(event){
@@ -238,19 +293,7 @@
         // Показать главное окно настройки конфигурации
         $('#div_raceConfig').show();
       }
-    }
-    // Настройка событий конфигурации гонки.
-    $(document).ready( function(){
-      // Обработка события click на поле выбора лодки для гонки.
-      $('#inRaceConfigBoat').on('click', (event) => {
-        // Показать таблицу лодок, оставив таблицу конфигурации гонки.
-        $('.div_tables').hide();
-        const idRace = $('#div_raceConfig').data('id_race');
-        SMRaces.getboats(idRace, tbRaceConfigBoats);
-        // Выбрать лодки и отметить, уже записанные на гонку
-        $('#div_raceConfigBoats').show();
-      });
-    });
+    };
   </script>
   <style>
       @import url(./Build/Cesium/Widgets/widgets.css);
@@ -327,6 +370,9 @@
   </div>
   <div id="div_raceConfigBoats" class="div_config_tables">
       <table id="tb_raceConfigBoats" class="display tb_info"></table>
+  </div>
+  <div id="div_raceConfigGadgets" class="div_config_tables">
+      <table id="tb_raceConfigGadgets" class="display tb_info"></table>
   </div>
   <script>
 
