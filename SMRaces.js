@@ -34,7 +34,7 @@ const SMRaces = (function() {
         .then(res => res.json())
         .then(dataSet => {
           tbRaceConfig.clear();
-          tbRaceConfig.rows.add(SMUtils.objArr2arrArr(dataSet, 'SMRaceConfig', [true, false, true]));
+          tbRaceConfig.rows.add(SMUtils.objArr2arrArr_raw(dataSet));
           tbRaceConfig.draw();
         })
         .catch(err => console.log(err));
@@ -55,6 +55,26 @@ const SMRaces = (function() {
       })
         .then(res => {
           this.getall(tbRaces);
+        })
+        .catch(err => console.log(err));
+    },
+    /** @description Удаляет запись о гонке
+    * @param {id} Id записи для удаления
+    * @param {idRace} Id гонки, для которой показана конфигурация
+    * @param {tbRaceConfig} Объект таблицы GUI
+    */
+    removeConfig(id, idRace, tbRaceConfig) {
+      const data = {
+        idrow: id
+      };
+      fetch(`${urlApi}/races/removeConfig`, {
+        method: 'POST',
+        mode: 'cors',
+        headers: SMHeaders,
+        body: JSON.stringify(data)
+      })
+        .then(res => {
+          this.getconfig(tbRaceConfig,idRace);
         })
         .catch(err => console.log(err));
     },
