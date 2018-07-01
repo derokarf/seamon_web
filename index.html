@@ -235,7 +235,11 @@
         // Показать таблицу лодок, оставив таблицу конфигурации гонки.
         $('.div_tables').hide();
         const idRace = $('#div_raceConfig').data('id_race');
-        SMRaces.getboats(idRace, tbRaceConfigBoats);
+        SMRaces.getboats(idRace).then( boats => {
+            tbRaceConfigBoats.clear();
+            tbRaceConfigBoats.rows.add(SMUtils.objArr2arrArr_raw(boats));
+            tbRaceConfigBoats.draw();
+        });
         // Выбрать лодки и отметить, уже записанные на гонку
         $('#div_raceConfigBoats').show();
       });
@@ -301,6 +305,18 @@
             hideAll();
             SMBoats.getall(tbBoats);
             $('#div_tableBoats').show();
+          }
+          // TEST
+          if(ui.item[0].id == 'li_test'){
+            // Для управления этой таблицей нужно скрыть остальные
+            hideAll();
+            SMRaces.getboats(1).then( boats => {
+              console.log(boats);
+              console.log(tbBoats);
+            });
+              // SMRaces.getone(1).then( race => {
+              //   console.log(race);
+              // })
           }
           //Скрыть меню, после выбора какого-либо пункта
           $('#ul_mainMenu').hide();
@@ -371,6 +387,11 @@
         <div>
           Races
         </div>
+      </li>
+      <li id="li_test">
+          <div>
+              Test
+          </div>
       </li>
     </ul>
   </div>

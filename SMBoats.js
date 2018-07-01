@@ -18,23 +18,6 @@ const SMBoats = (function() {
         })
         .catch(err => console.log(err));
     },
-    // /** @description Загружает список всех лодок для простого списка
-    // * @param {tbBoats} Объект таблицы GUI, контейнера данных
-    // */
-    // getall_list(tbBoats) {
-    //   fetch(`${urlApi}/boats/getall`, {
-    //     method: 'GET',
-    //     mode: 'cors',
-    //     headers: SMHeaders
-    //   })
-    //     .then(res => res.json())
-    //     .then(dataSet => {
-    //       tbBoats.clear();
-    //       tbBoats.rows.add(SMUtils.objArr2arrArr(dataSet, 'SMBoatsList', [false, false, false]));
-    //       tbBoats.draw();
-    //     })
-    //     .catch(err => console.log(err));
-    // },
     /** @description Удаляет запись о лодке
     * @param {id} Id записи для удаления
     * @param {tbBoats} Объект таблицы GUI
@@ -69,6 +52,23 @@ const SMBoats = (function() {
           this.getall(tbBоats);
         })
         .catch(err => console.log(err));
+    },
+    /**
+    * @description Объект лодки
+    * @param {int} id Id лодки в базе.
+    * @param {String} name Имя лодки.
+    * @param {String} type Тип(класс) лодки в классе.
+    * @param {String} role Роль лодки в гонке (судья, участник, зритель).
+    */
+    boat(){
+      this.id;
+      this.name;
+      this.type;
+      this.role;
+      this.gadget;
+      this.about;
+      // Трек лодки для гонки, к которой она приписана
+      this.track = [];
     }
   };
 }());
