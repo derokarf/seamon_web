@@ -96,6 +96,13 @@
 
 }
 
+#div_listMembers {
+  top:40px;
+  left: 10px;
+  height: 50%;
+  width: 45%;
+}
+
 #div_raceConfigBoats {
   top: 20px;
   left: 50%;

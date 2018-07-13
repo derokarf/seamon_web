@@ -27,7 +27,6 @@
   <script>
   const SMHeaders = new Headers();
   SMHeaders.append('Content-Type','application/json');
-  // postHeaders.append('Access-Control-Allow-Origin','http://localhost:8080');
   SMHeaders.append('Access-Control-Request-Headers','X-Custom-Header');
   const urlApi = 'http://localhost:8085/api';
   let tbBoats;
@@ -36,8 +35,12 @@
   let tbRaceConfig;
   let tbRaceConfigBoats;
   let tbRaceConfigGadgets;
+  let Race;
 
     $(document).ready( function() {
+      // Инициализация кнопок
+      $( 'buttons' ).button();
+
       // Инициализация виджетов JQuery UI
       // Главная кнопка меню, левый верхний угол
       $( '#bt_mainButton' ).button();
@@ -192,6 +195,8 @@
           { title: 'Manage'}
         ]
       });
+
+      // Инициализация событий.
       // Добавление новой гонки в базу
       $('#bt_addRace').on('click', function(){
         const data = {
@@ -214,7 +219,40 @@
           $(this).addClass('selected');
         }
       });
+
+      // Загрузка текущей гонки.
+      $('#bt_loadRace').on('click', function(){
+        const dataRow = tbRaces.row('.selected').data();
+        Race = new SMRaces.Race(dataRow[0]);
+        Race.load().then(() => {
+          // Записываем участников гонки в таблицу;
+          hideAll();
+          tbListMembers.clear();
+          tbListMembers.rows.add(Race.getListMembers());
+          tbListMembers.draw();
+          $('#div_listMembers').show();
+        });
+      });
+      // Обработка события click на кнопке удаления записи в строке таблицы
+      $('#btRemoveRace').on('click', (event) => {
+        const dataRow = tbRaces.row('.selected').data();
+        SMRaces.remove(dataRow[0],tbRaces);
+      });
     });
+    //----------------------------------//
+
+    //Инициализация виджета списка участников
+    $(document).ready( function(){
+      tbListMembers = $('#tb_listMembers').DataTable({
+        columns: [
+          { title: 'ID', visible: false, searchable: false },
+          { title: 'Name'}
+        ]
+      });
+      //Инициализация кнопок
+      const btListMembersSelectAll = $('#bt_listMembersSelectAll').button();
+    });
+    //----------------------------------//
     //Инициализация виджета конфигурации гонки
     $(document).ready( function(){
       tbRaceConfig = $('#tb_raceConfig').DataTable({
@@ -281,6 +319,7 @@
         }
       });
     });
+    //----------------------------------//
 
     // Инициализация виджета главного меню
     $(document).ready( function() {
@@ -306,38 +345,18 @@
             SMBoats.getall(tbBoats);
             $('#div_tableBoats').show();
           }
-          // TEST
-          if(ui.item[0].id == 'li_test'){
+          // Показать список участников
+          if(ui.item[0].id == 'li_members'){
             // Для управления этой таблицей нужно скрыть остальные
             hideAll();
-            SMRaces.getboats(1).then( boats => {
-              console.log(boats);
-              console.log(tbBoats);
-            });
-              // SMRaces.getone(1).then( race => {
-              //   console.log(race);
-              // })
+            // Показываем список учасников, если загружена гонка
+            $('#div_listMembers').show();
           }
           //Скрыть меню, после выбора какого-либо пункта
           $('#ul_mainMenu').hide();
         }
       }).hide();
     });
-    // Обработка события click на кнопке удаления записи в строке таблицы
-    function clickBtDel(event){
-      const typeTable = event.currentTarget.dataset.tableName;
-      const id = event.target.dataset.rowId;
-      // Выбор функции удаления в зависимости от типа таблицы
-      // Некоторые "базовые таблицы" - лодки, трекера, гонки - могут по разному
-      // обрабатывать событие удаления
-      if(typeTable == 'SMBoats'){
-        SMBoats.remove(id, tbBoats);
-      } else if (typeTable == 'SMRaces') {
-        SMRaces.remove(id, tbRaces);
-      } else if (typeTable == 'SMGadgets') {
-        SMGadgets.remove(id, tbGadgets);
-      }
-    };
 
     // Скрывает все окна таблиц
     function hideAll(){
@@ -388,10 +407,10 @@
           Races
         </div>
       </li>
-      <li id="li_test">
-          <div>
-              Test
-          </div>
+      <li id="li_members">
+        <div>
+          Members
+        </div>
       </li>
     </ul>
   </div>
@@ -426,6 +445,9 @@
       <input id="inRaceLocation" name="inRaceLocation" type="text" placeholder="location">
       <input id="inRaceAbout" name="inRaceAbout" type="text" placeholder="about">
       <button id="bt_addRace" class="buttons">addRace</button>
+      <button id="bt_loadRace" class="buttons">loadRace</button>
+      <button id="bt_configRace" class="buttons">configRace</button>
+      <button id="bt_removeRace" class="buttons">removeRace</button>
     </div>
   </div>
   <div id="div_raceConfig" class="div_config">
@@ -436,10 +458,16 @@
       <input id="inRaceConfigGadget" name="inRaceConfigGadget" type="text" placeholder="Gadget" readonly/>
       <input id="inRaceConfigStatus" name="inRaceConfigStatus" type="text" placeholder="Status"/>
       <input id="inRaceConfigAbout" name="inRaceConfigAbout" type="text" placeholder="About"/>
-      <button id="bt_addRaceConfig" class="buttons sm_buttons">addRow</button>
+      <button id="bt_addRaceConfig" class="buttons sm_button">addRow</button>
       <button id="bt_editRaceConfig" class="buttons sm_buttons">editRow</button>
       <button id="bt_removeRaceConfig" class="buttons sm_buttons">removeRow</button>
     </div>
+  </div>
+  <div id="div_listMembers" class="div_tables">
+      <table id="tb_listMembers" class="display tb_info"></table>
+      <div id="div_editListMembers">
+          <input id="bt_listMembersSelectAll" name="bt_listMembersSelectAll" type="button" class="buttons">SelectAll</input>
+      </div>
   </div>
   <div id="div_raceConfigBoats" class="div_config_tables">
       <table id="tb_raceConfigBoats" class="display tb_config"></table>

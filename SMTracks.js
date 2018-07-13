@@ -1,4 +1,6 @@
 // Отвечает за gps треки и их загрузку/обработку
+// Тестовые данные start = 1530269726000
+// stop = 1530967303000
 const SMTracks = (function() {
   const MON_URL = 'http://localhost:8085/api/track';
   return {
@@ -22,7 +24,9 @@ const SMTracks = (function() {
     */
     loadTrack(id, start, stop) {
       const data = {
-        idgadget: id
+        id: id,
+        start: start,
+        stop: stop
       };
       return fetch(`${urlApi}/tracks/gettrack`, {
         method: 'POST',
@@ -30,8 +34,7 @@ const SMTracks = (function() {
         headers: SMHeaders,
         body: JSON.stringify(data)
       })
-        .then(res => res.json())
-        .catch(err => console.error(err));
+        .then(res => res.json());
     },
     test() {
       return fetch(MON_URL).then(response => response);

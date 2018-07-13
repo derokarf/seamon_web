@@ -60,15 +60,17 @@ const SMBoats = (function() {
     * @param {String} type Тип(класс) лодки в классе.
     * @param {String} role Роль лодки в гонке (судья, участник, зритель).
     */
-    boat(){
-      this.id;
-      this.name;
-      this.type;
-      this.role;
-      this.gadget;
-      this.about;
-      // Трек лодки для гонки, к которой она приписана
-      this.track = [];
+    boat: function() {
+      return {
+        id: null,
+        name: null,
+        type: null,
+        role: null,
+        gadget: null,
+        about: null,
+        // Трек лодки для гонки, к которой она приписана
+        track: []
+      };
     }
   };
-}());
+})();

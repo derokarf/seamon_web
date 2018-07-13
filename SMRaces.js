@@ -1,68 +1,86 @@
 // Отвечает за обмен с сервером информацией по гонкам
 const SMRaces = (function() {
-  /**
-  * @description Класс объектов гонки. Содержи в себе учавствующие лодки с треками и
-  *              другие элементы гоки
-  */
-  const Race = function(id){
-    this.id = id;
-    this.name;
-    this.begin;
-    this.end;
-    this.start;
-    this.finish;
-    this.location;
-    this.about;
-    this.boats = [];
-
-  };
-  Race.prototype = {
-    /**
-    * @description Загружает данные для объекта гонки и инициализирует его.
-    */
-    load: function(){
-      // Загружаем параметры гонки.
-      SMRaces.getone(this.id).then(race => {
-        this.name = race.name;
-        this.begin = race.begin;
-        this.end = race.end;
-        this.start = race.start;
-        this.finish = race.finish;
-        this.location = race.location;
-        this.about = race.about;
-      });
-      // Загружаем список id лодок и трекеров, назначенным для них.
-      // Инициализируем пустые массивы под участников
-      // для дальнейшего заполнения.
-      SMRaces.getmembers(this.id).then( config => {
-        config.forEach((item, i, arr) => {
-          const boat = new SMBoats.boat();
-          boat.id = item.boat_id;
-          boat.gadget = item.gadget_id;
-          boat.role = item.status_id;
-          boat.about = item.about;
-          this.boats.push(boat);
-        });
-        return this.boats;
-      })
-      .then( boats => {
-        // Загружаем список трекеров
-        boats.forEach((boat, i, arr) => {
-          SMTracks.gettrack(boat.gadget_id, start, stop).then(track => {
-            boat.track = track;
-          });
-        });
-      });
-    }
-  };
-
   return {
+    /**
+    * @description Класс объектов гонки. Содержи в себе учавствующие лодки с треками и
+    *              другие элементы гонки
+    */
+    Race: function(id) {
+      return {
+        id: id,
+        name: null,
+        begin: null,
+        end: null,
+        start: null,
+        finish: null,
+        location: null,
+        about: null,
+        boats: [],
+        __proto__: {
+          /**
+          * @description Загружает данные для объекта гонки и инициализирует его.
+          * @return {Promise} Возвращает <code>Promise</code> после загрузки.
+          */
+          async load() {
+            if(id == undefined){
+              console.error('Гонка не загружена');
+              return;
+            }
+            // Загружаем параметры гонки.
+            try {
+              const race = await SMRaces.getone(id);
+                this.name = race.name;
+                this.begin = race.begin;
+                this.end = race.end;
+                this.start = race.start;
+                this.finish = race.finish;
+                this.location = race.location;
+                this.about = race.about;
+                console.log(this);
+              // Загружаем список id лодок и трекеров, назначенным для них.
+              // Инициализируем пустые массивы под участников
+              // для дальнейшего заполнения.
+              const config = await SMRaces.getmembers(id);
+              config.forEach((item, i, arr) => {
+                const boat = new SMBoats.boat();
+                boat.id = item.boat_id;
+                boat.name = item.boat_name;
+                boat.gadget = item.gadget_id;
+                boat.role = item.status_id;
+                boat.about = item.about;
+                this.boats.push(boat);
+              });
+              // Загружаем треки для лодок.
+              for(let i=0; i < this.boats.length; i++){
+                let track;
+                try {
+                  track = await SMTracks.loadTrack(this.boats[i].id, this.begin, this.end);
+                } catch (e) {
+                  console.error('Ошибка трека: ' + e);
+                } finally {
+                  this.boats[i].track = track;
+                }
+              }
+            } catch (err) {
+              console.error(err);
+            }
+          },
+          getListMembers() {
+            const members = [];
+            this.boats.forEach((boat, i, arr) => {
+              members.push([ boat.id, boat.name ]);
+            });
+            return members;
+          }
+        }
+      };
+    },
     /**
     * @description Асинхронный метод. Загружает параметры одной гонки.
     * @param {int} idRace Id гонки в базе данных.
     * @return {Promise} Возвращает объект с параметрами гонки.
     */
-    async getone(idRace){
+    async getone(idRace) {
       const data = {
         idrow: idRace
       };
@@ -177,6 +195,29 @@ const SMRaces = (function() {
       })
         .then(res => res.json())
         .catch(err => console.error(err));
+    },
+    /**
+    * @description Асинхронный метод. Получает список участвующих лодок
+    *              и трекеров, зарегистрированных для этих лодок
+    * @param {idRace} Id гонки
+    * @return {Promise} Возвращает массив объектов
+    */
+    async getmembers(idRace) {
+      const data = {
+        idrace: idRace
+      };
+      try {
+        const result = await fetch(`${urlApi}/races/getmembers`, {
+          method: 'POST',
+          mode: 'cors',
+          headers: SMHeaders,
+          body: JSON.stringify(data)
+        });
+        const resultJSON = await result.json();
+        return resultJSON;
+      } catch (err) {
+        console.error(err);
+      }
     },
     /**
     * @description Получает список участвующих трекеров
