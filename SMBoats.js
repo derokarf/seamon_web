@@ -68,6 +68,7 @@ const SMBoats = (function() {
         role: null,
         gadget: null,
         about: null,
+        cs_mark: null,
         // Трек лодки для гонки, к которой она приписана
         track: []
       };

@@ -18,15 +18,15 @@ const SMTracks = (function() {
     * @description Загружает трек трекера за указанное время.
     *              Сортировка по времени.
     * @param {number} id Id трекера.
-    * @param {number} start Начальное время.
-    * @param {number} stop Конечное время.
+    * @param {Date} start Начальное время.
+    * @param {Date} stop Конечное время.
     * @return {Promise} При успехе возвращает массив GPSRMC.
     */
     loadTrack(id, start, stop) {
       const data = {
         id: id,
-        start: start,
-        stop: stop
+        start: start.getTime(),
+        stop: stop.getTime()
       };
       return fetch(`${urlApi}/tracks/gettrack`, {
         method: 'POST',

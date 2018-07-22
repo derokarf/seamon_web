@@ -30,13 +30,12 @@ const SMRaces = (function() {
             try {
               const race = await SMRaces.getone(id);
                 this.name = race.name;
-                this.begin = race.begin;
-                this.end = race.end;
+                this.begin = new Date(parseInt(race.begin));
+                this.end = new Date(parseInt(race.end));
                 this.start = race.start;
                 this.finish = race.finish;
                 this.location = race.location;
                 this.about = race.about;
-                console.log(this);
               // Загружаем список id лодок и трекеров, назначенным для них.
               // Инициализируем пустые массивы под участников
               // для дальнейшего заполнения.
@@ -68,7 +67,7 @@ const SMRaces = (function() {
           getListMembers() {
             const members = [];
             this.boats.forEach((boat, i, arr) => {
-              members.push([ boat.id, boat.name ]);
+              members.push([ boat.id, i+1, boat.name ]);
             });
             return members;
           }

@@ -35,11 +35,12 @@
   let tbRaceConfig;
   let tbRaceConfigBoats;
   let tbRaceConfigGadgets;
+  let tbListMembers;
   let Race;
 
     $(document).ready( function() {
       // Инициализация кнопок
-      $( 'buttons' ).button();
+      $( '.buttons' ).button();
 
       // Инициализация виджетов JQuery UI
       // Главная кнопка меню, левый верхний угол
@@ -56,307 +57,400 @@
         $( '#ul_mainMenu' ).toggle(); // Показать/скрыть главное меню
       });
     });
+
     // Инициализация виджета таблицы со списком лодок
-    $(document).ready( function() {
-      tbBoats = $('#tb_tableBoats').DataTable({
-        columns: [
-          { title: 'ID'},
-          { title: 'Name'},
-          { title: 'Type'},
-          { title: 'About'},
-          { title: 'Manage'}
-        ]
-      });
-      // Добавление новой лодки в базу
-      $('#bt_addBoat').on('click', function(){
-        const data = {
-          boatName: $('#inBoatName').val(),
-          boatType: $('#inBoatType').val(),
-          boatAbout: $('#inBoatAbout').val()
-        };
-        SMBoats.add(data, tbBoats);
-      });
-      // Настройка single-selection
-      $('#tb_tableBoats').on( 'click', 'tr', function () {
-        if ( $(this).hasClass('selected') ) {
-          $(this).removeClass('selected');
-        } else {
-          tbBoats.$('tr.selected').removeClass('selected');
-          $(this).addClass('selected');
-        }
-      });
-    });
-    // Инициализация виджета таблицы со списком лодок для конфигурации гонки
-    $(document).ready( function() {
-      tbRaceConfigBoats = $('#tb_raceConfigBoats').DataTable({
-        columns: [
-          { title: 'ID' },
-          { title: 'Name' },
-          { title: 'Type' },
-          { title: 'About' },
-          { title: 'ID_Race', visible: false, searchable: false }
-        ],
-        createdRow: function ( row, data, index ) {
-          if(data[data.length-1] != null){
-            $(row).addClass('selected');
+    function initTableBoats() {
+      $(document).ready( function() {
+        tbBoats = $('#tb_tableBoats').DataTable({
+          columns: [
+            { title: 'ID'},
+            { title: 'Name'},
+            { title: 'Type'},
+            { title: 'About'},
+            { title: 'Manage'}
+          ]
+        });
+        // Добавление новой лодки в базу
+        $('#bt_addBoat').on('click', function(){
+          const data = {
+            boatName: $('#inBoatName').val(),
+            boatType: $('#inBoatType').val(),
+            boatAbout: $('#inBoatAbout').val()
+          };
+          SMBoats.add(data, tbBoats);
+        });
+        // Настройка single-selection
+        $('#tb_tableBoats').on( 'click', 'tr', function () {
+          if ( $(this).hasClass('selected') ) {
+            $(this).removeClass('selected');
+          } else {
+            tbBoats.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
           }
-        }
-      });
-      $('#tb_raceConfigBoats').on( 'click', 'tr', function(){
-        // Если этой лодки нет в гонке, то добавляем ее на панель конфигурации
-        // и закрываем таблицу выбора.
-        if ( !($(this).hasClass('selected')) ) {;
-          // Получаем данные гонки, имя записываем в видимое поле,
-          // id записываем в пользовательские данные элемента.
-          const rowBoat = tbRaceConfigBoats.row(this).data();
-          $('#inRaceConfigBoat').val(rowBoat[1]);
-          $('#inRaceConfigBoat').data('id_boat',rowBoat[0]);
-          $('#div_raceConfigBoats').hide();
-        }
-      });
-    });
-    //Инициализация виджета таблицы со списком трекеров
-    $(document).ready( function() {
-      tbGadgets = $('#tb_tableGadgets').DataTable({
-        columns: [
-          { title: 'ID' },
-          { title: 'IMEI' },
-          { title: 'Phone' },
-          { title: 'Name' },
-          { title: 'Type' },
-          { title: 'About' },
-          { title: 'Manage' }
-        ]
-      });
-      // Добавление нового трекера в базу
-      $('#bt_addGadget').on('click', function(){
-        const data = {
-          gadgetName: $('#inGadgetName').val(),
-          gadgetIMEI: $('#inGadgetIMEI').val(),
-          gadgetPhone: $('#inGadgetPhone').val(),
-          gadgetType: $('#inGadgetType').val(),
-          gadgetAbout: $('#inGadgetAbout').val()
-        };
-        SMGadgets.add(data, tbGadgets);
-      });
-      // Настройка single-selection
-      $('#tb_tableGadgets').on( 'click', 'tr', function () {
-        if ( $(this).hasClass('selected') ) {
-          $(this).removeClass('selected');
-        } else {
-          tbGadgets.$('tr.selected').removeClass('selected');
-          $(this).addClass('selected');
-        }
-      });
-    });
-    // Инициализация виджета таблицы со списком трекеров для конфигурации гонки
-    $(document).ready( function() {
-      tbRaceConfigGadgets = $('#tb_raceConfigGadgets').DataTable({
-        columns: [
-          { title: 'ID' },
-          { title: 'Name' },
-          { title: 'IMEI' },
-          { title: 'Phone' },
-          { title: 'Type' },
-          { title: 'About' },
-          { title: 'ID_Race', visible: false, searchable: false }
-        ],
-        createdRow: function ( row, data, index ) {
-          if(data[data.length-1] != null){
-            $(row).addClass('selected');
-          }
-        }
-      });
-      $('#tb_raceConfigGadgets').on( 'click', 'tr', function(){
-        // Если этого трекера нет в гонке, то добавляем его на панель конфигурации
-        // и закрываем таблицу выбора.
-        if ( !($(this).hasClass('selected')) ) {;
-          // Получаем данные гонки, имя записываем в видимое поле,
-          // id записываем в пользовательские данные элемента.
-          const rowGadget = tbRaceConfigGadgets.row(this).data();
-          $('#inRaceConfigGadget').val(rowGadget[1]);
-          $('#inRaceConfigGadget').data('id_gadget',rowGadget[0]);
-          $('#div_raceConfigGadgets').hide();
-        }
-      });
-    });
-    //Инициализация виджета таблицы со списком гонок
-    $(document).ready( function() {
-      tbRaces = $('#tb_tableRaces').DataTable({
-        columns: [
-          { title: 'ID' },
-          { title: 'Name' },
-          { title: 'Begin' },
-          { title: 'End' },
-          { title: 'Start' },
-          { title: 'Finish' },
-          { title: 'Location' },
-          { title: 'About' },
-          { title: 'Manage'}
-        ]
-      });
-
-      // Инициализация событий.
-      // Добавление новой гонки в базу
-      $('#bt_addRace').on('click', function(){
-        const data = {
-          raceName: $('#inRaceName').val(),
-          raceBegin: $('#inRaceBegin').val(),
-          raceEnd: $('#inRaceEnd').val(),
-          raceStart: $('#inRaceStart').val(),
-          raceFinish: $('#inRaceFinish').val(),
-          raceLocation: $('#inRaceLocation').val(),
-          raceAbout: $('#inRaceAbout').val()
-        };
-        SMRaces.add(data, tbRaces);
-      });
-      // Настройка single-selection
-      $('#tb_tableRaces').on( 'click', 'tr', function () {
-        if ( $(this).hasClass('selected') ) {
-          $(this).removeClass('selected');
-        } else {
-          tbRaces.$('tr.selected').removeClass('selected');
-          $(this).addClass('selected');
-        }
-      });
-
-      // Загрузка текущей гонки.
-      $('#bt_loadRace').on('click', function(){
-        const dataRow = tbRaces.row('.selected').data();
-        Race = new SMRaces.Race(dataRow[0]);
-        Race.load().then(() => {
-          // Записываем участников гонки в таблицу;
-          hideAll();
-          tbListMembers.clear();
-          tbListMembers.rows.add(Race.getListMembers());
-          tbListMembers.draw();
-          $('#div_listMembers').show();
         });
       });
-      // Обработка события click на кнопке удаления записи в строке таблицы
-      $('#btRemoveRace').on('click', (event) => {
-        const dataRow = tbRaces.row('.selected').data();
-        SMRaces.remove(dataRow[0],tbRaces);
+    }
+
+    // Инициализация виджета таблицы со списком лодок для конфигурации гонки
+    function initRaceConfigBoats() {
+      $(document).ready( function() {
+        tbRaceConfigBoats = $('#tb_raceConfigBoats').DataTable({
+          columns: [
+            { title: 'ID' },
+            { title: 'Name' },
+            { title: 'Type' },
+            { title: 'About' },
+            { title: 'ID_Race', visible: false, searchable: false }
+          ],
+          createdRow: function ( row, data, index ) {
+            if(data[data.length-1] != null){
+              $(row).addClass('selected');
+            }
+          }
+        });
+        $('#tb_raceConfigBoats').on( 'click', 'tr', function(){
+          // Если этой лодки нет в гонке, то добавляем ее на панель конфигурации
+          // и закрываем таблицу выбора.
+          if ( !($(this).hasClass('selected')) ) {;
+            // Получаем данные гонки, имя записываем в видимое поле,
+            // id записываем в пользовательские данные элемента.
+            const rowBoat = tbRaceConfigBoats.row(this).data();
+            $('#inRaceConfigBoat').val(rowBoat[1]);
+            $('#inRaceConfigBoat').data('id_boat',rowBoat[0]);
+            $('#div_raceConfigBoats').hide();
+          }
+        });
       });
-    });
-    //----------------------------------//
+    }
+
+    //Инициализация виджета таблицы со списком трекеров
+    function initTableGadgets() {
+      $(document).ready( function() {
+        tbGadgets = $('#tb_tableGadgets').DataTable({
+          columns: [
+            { title: 'ID' },
+            { title: 'IMEI' },
+            { title: 'Phone' },
+            { title: 'Name' },
+            { title: 'Type' },
+            { title: 'About' },
+            { title: 'Manage' }
+          ]
+        });
+        // Добавление нового трекера в базу
+        $('#bt_addGadget').on('click', function() {
+          const data = {
+            gadgetName: $('#inGadgetName').val(),
+            gadgetIMEI: $('#inGadgetIMEI').val(),
+            gadgetPhone: $('#inGadgetPhone').val(),
+            gadgetType: $('#inGadgetType').val(),
+            gadgetAbout: $('#inGadgetAbout').val()
+          };
+          SMGadgets.add(data, tbGadgets);
+        });
+        // Настройка single-selection
+        $('#tb_tableGadgets').on( 'click', 'tr', function () {
+          if ( $(this).hasClass('selected') ) {
+            $(this).removeClass('selected');
+          } else {
+            tbGadgets.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+          }
+        });
+      });
+    }
+
+    // Инициализация виджета таблицы со списком трекеров для конфигурации гонки
+    function initRaceConfigGadgets() {
+      $(document).ready( function() {
+        tbRaceConfigGadgets = $('#tb_raceConfigGadgets').DataTable({
+          columns: [
+            { title: 'ID' },
+            { title: 'Name' },
+            { title: 'IMEI' },
+            { title: 'Phone' },
+            { title: 'Type' },
+            { title: 'About' },
+            { title: 'ID_Race', visible: false, searchable: false }
+          ],
+          createdRow: function ( row, data, index ) {
+            if(data[data.length-1] != null){
+              $(row).addClass('selected');
+            }
+          }
+        });
+        $('#tb_raceConfigGadgets').on( 'click', 'tr', function(){
+          // Если этого трекера нет в гонке, то добавляем его на панель конфигурации
+          // и закрываем таблицу выбора.
+          if ( !($(this).hasClass('selected')) ) {;
+            // Получаем данные гонки, имя записываем в видимое поле,
+            // id записываем в пользовательские данные элемента.
+            const rowGadget = tbRaceConfigGadgets.row(this).data();
+            $('#inRaceConfigGadget').val(rowGadget[1]);
+            $('#inRaceConfigGadget').data('id_gadget',rowGadget[0]);
+            $('#div_raceConfigGadgets').hide();
+          }
+        });
+      });
+    }
+    //Инициализация виджета таблицы со списком гонок
+    function initTableRaces() {
+      $(document).ready( function() {
+        tbRaces = $('#tb_tableRaces').DataTable({
+          columns: [
+            { title: 'ID' },
+            { title: 'Name' },
+            { title: 'Begin' },
+            { title: 'End' },
+            { title: 'Start' },
+            { title: 'Finish' },
+            { title: 'Location' },
+            { title: 'About' },
+            { title: 'Manage'}
+          ]
+        });
+
+        // Инициализация событий.
+        // Добавление новой гонки в базу
+        $('#bt_addRace').on('click', function(){
+          const data = {
+            raceName: $('#inRaceName').val(),
+            raceBegin: $('#inRaceBegin').val(),
+            raceEnd: $('#inRaceEnd').val(),
+            raceStart: $('#inRaceStart').val(),
+            raceFinish: $('#inRaceFinish').val(),
+            raceLocation: $('#inRaceLocation').val(),
+            raceAbout: $('#inRaceAbout').val()
+          };
+          SMRaces.add(data, tbRaces);
+        });
+        // Настройка single-selection
+        $('#tb_tableRaces').on( 'click', 'tr', function () {
+          if ( $(this).hasClass('selected') ) {
+            $(this).removeClass('selected');
+          } else {
+            tbRaces.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+          }
+        });
+
+        // Загрузка текущей гонки.
+        $('#bt_loadRace').on('click', function(){
+          const dataRow = tbRaces.row('.selected').data();
+          Race = new SMRaces.Race(dataRow[0]);
+          Race.load().then(() => {
+
+            //////////!!!!!!!!!КОСТЫЛЬ!!!!!!!!!!!!///////////
+            Race.boats.forEach((item, i, arr) => {
+              item.track.forEach((row, j, list) => {
+                row.lng = SMUtils.latlng2deg(row.lng);
+                row.lat = SMUtils.latlng2deg(row.lat);
+              });
+            });
+
+            ////////////////////////////////////////////////
+
+            // Записываем участников гонки в таблицу;
+            hideAll();
+            tbListMembers.clear();
+            tbListMembers.rows.add(Race.getListMembers());
+            tbListMembers.draw();
+            $('#div_listMembers').show();
+            // Устанавливаем границы TimeLine в соответствие с Begin и End для гонки.
+            viewer.timeline.zoomTo(Cesium.JulianDate.fromDate(Race.begin), Cesium.JulianDate.fromDate(Race.end));
+          });
+        });
+        // Обработка события click на кнопке удаления записи в строке таблицы
+        $('#btRemoveRace').on('click', (event) => {
+          const dataRow = tbRaces.row('.selected').data();
+          SMRaces.remove(dataRow[0],tbRaces);
+        });
+      });
+    }
 
     //Инициализация виджета списка участников
-    $(document).ready( function(){
-      tbListMembers = $('#tb_listMembers').DataTable({
-        columns: [
-          { title: 'ID', visible: false, searchable: false },
-          { title: 'Name'}
-        ]
-      });
-      //Инициализация кнопок
-      const btListMembersSelectAll = $('#bt_listMembersSelectAll').button();
-    });
-    //----------------------------------//
-    //Инициализация виджета конфигурации гонки
-    $(document).ready( function(){
-      tbRaceConfig = $('#tb_raceConfig').DataTable({
-        columns: [
-          { title: 'ID' },
-          { title: 'Boat' },
-          { title: 'boat_id', visible: false, searchable: false },
-          { title: 'Gadget' },
-          { title: 'gadget_id', visible: false, searchable: false },
-          { title: 'Status' },
-          { title: 'status_id', visible: false, searchable: false },
-          { title: 'About' }
-        ]
-      });
-
-      // Обработка события click на поле выбора лодки для гонки.
-      $('#inRaceConfigBoat').on('click', (event) => {
-        // Показать таблицу лодок, оставив таблицу конфигурации гонки.
-        $('.div_tables').hide();
-        const idRace = $('#div_raceConfig').data('id_race');
-        SMRaces.getboats(idRace).then( boats => {
-            tbRaceConfigBoats.clear();
-            tbRaceConfigBoats.rows.add(SMUtils.objArr2arrArr_raw(boats));
-            tbRaceConfigBoats.draw();
+    function initListMembers() {
+      $(document).ready( function(){
+        tbListMembers = $('#tb_listMembers').DataTable({
+          searching: false,
+          ordering: false,
+          info: false,
+          scrollY:        "200px",
+          scrollCollapse: true,
+          paging:         false,
+          columns: [
+            { title: 'ID', visible: false, searchable: false },
+            {title: '№'},
+            { title: 'Name'}
+          ]
         });
-        // Выбрать лодки и отметить, уже записанные на гонку
-        $('#div_raceConfigBoats').show();
-      });
+        //Инициализация кнопок
+        const btListMembersSelectAll = $('#bt_listMembersSelectAll').button();
 
-      // Обработка события click на поле выбора трекера для гонки.
-      $('#inRaceConfigGadget').on('click', (event) => {
-        // Показать таблицу трекеров, оставив таблицу конфигурации гонки.
-        $('.div_tables').hide();
-        const idRace = $('#div_raceConfig').data('id_race');
-        SMRaces.getgadgets(idRace, tbRaceConfigGadgets);
-        // Выбрать лодки и отметить, уже записанные на гонку
-        $('#div_raceConfigGadgets').show();
-      });
+        // Обработка события click на кнопке загрузки трекера
+        $('#bt_listMembersTrack').on('click', (event) => {
+          const dataRow = tbListMembers.row('.selected').data();
+          showTrack(dataRow[0]);
+        });
 
-      // Добавление нового участника (связки лодка-трекер-статус).
-      $('#bt_addRaceConfig').on('click', function() {
-        const data = {
-          raceConfigIdRace: $('#div_raceConfig').data('id_race'),
-          raceConfigBoat: $('#inRaceConfigBoat').data('id_boat'),
-          raceConfigGadget: $('#inRaceConfigGadget').data('id_gadget'),
-          raceConfigStatus: $('#inRaceConfigStatus').val(),
-          raceConfigAbout: $('#inRaceConfigAbout').val()
-        };
-        SMRaces.addConfig(data, tbRaceConfig);
+        //single-selection
+        enableSingleSelection('#tb_listMembers', tbListMembers);
+
+        // Позиционирование камеры на лодке
+        $('#tb_listMembers').on( 'click', 'tr', function () {
+          // Получаем id лодки в базе
+          const index = tbListMembers.row(this).data()[1] - 1;
+          // Выясняем текущее время на TimeLine.
+          const timeMark = Cesium.JulianDate.toDate(viewer.clock.currentTime).getTime();
+          ///!!!!!!!!!!!!!!
+          //// ЗАМЕНИТЬ ЭФФЕКТИВНЫМ МЕТОДОМ ПОИСКА!
+          ////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          // Ищем ближайшую точку на треке.
+          let delta;
+          let minDelta = Number.MAX_VALUE;
+          let result;
+          for(let i=0; i < Race.boats[index].track.length; i++){
+            delta = Math.abs( Race.boats[index].track[i].ttdd - timeMark );
+            if(delta < minDelta){
+              minDelta = delta;
+              result = i;
+            }
+          }
+          // Обозначаем точку на карте флагом.
+          const pointGPS = Race.boats[index].track[result];
+          // Удаляем старый флаг.
+          if( Race.boats[index].cs_mark != null ){
+            viewer.entities.remove(Race.boats[index].cs_mark);
+          }
+          Race.boats[index].cs_mark = SMGraph.drawFlag(pointGPS, viewer);
+          viewer.zoomTo(viewer.entities);
+        });
+
       });
-      // Удаление участника
-      $('#bt_removeRaceConfig').on('click', function() {
-        const dataRow = tbRaceConfig.row('.selected').data();
-        // dataRow[0] == id row в таблице и базе данных
-         SMRaces.removeConfig(dataRow[0], $('#div_raceConfig').data('id_race'), tbRaceConfig);
-      });
-      // Настройка single-selection
-      $('#tb_raceConfig').on( 'click', 'tr', function () {
-        if ( $(this).hasClass('selected') ) {
-          $(this).removeClass('selected');
-        } else {
-          tbRaceConfig.$('tr.selected').removeClass('selected');
-          $(this).addClass('selected');
+    }
+
+    // Показывает трек выбранной гонки
+    function showTrack(id) {
+      Race.boats.forEach((item, i, arr) => {
+        if(item.id == id){
+          const tmpTrack = [];
+          item.track.forEach((row, j, list) => {
+            tmpTrack.push(row.lng);
+            tmpTrack.push(row.lat);
+          });
+          SMGraph.drawTrack(tmpTrack, viewer);
+          return;
         }
       });
-    });
-    //----------------------------------//
+    }
+
+    //Инициализация виджета конфигурации гонки
+    function initRaceConfig() {
+      $(document).ready( function(){
+        tbRaceConfig = $('#tb_raceConfig').DataTable({
+          columns: [
+            { title: 'ID' },
+            { title: 'Boat' },
+            { title: 'boat_id', visible: false, searchable: false },
+            { title: 'Gadget' },
+            { title: 'gadget_id', visible: false, searchable: false },
+            { title: 'Status' },
+            { title: 'status_id', visible: false, searchable: false },
+            { title: 'About' }
+          ]
+        });
+
+        // Обработка события click на поле выбора лодки для гонки.
+        $('#inRaceConfigBoat').on('click', (event) => {
+          // Показать таблицу лодок, оставив таблицу конфигурации гонки.
+          $('.div_tables').hide();
+          const idRace = $('#div_raceConfig').data('id_race');
+          SMRaces.getboats(idRace).then( boats => {
+              tbRaceConfigBoats.clear();
+              tbRaceConfigBoats.rows.add(SMUtils.objArr2arrArr_raw(boats));
+              tbRaceConfigBoats.draw();
+          });
+          // Выбрать лодки и отметить, уже записанные на гонку
+          $('#div_raceConfigBoats').show();
+        });
+
+        // Обработка события click на поле выбора трекера для гонки.
+        $('#inRaceConfigGadget').on('click', (event) => {
+          // Показать таблицу трекеров, оставив таблицу конфигурации гонки.
+          $('.div_tables').hide();
+          const idRace = $('#div_raceConfig').data('id_race');
+          SMRaces.getgadgets(idRace, tbRaceConfigGadgets);
+          // Выбрать лодки и отметить, уже записанные на гонку
+          $('#div_raceConfigGadgets').show();
+        });
+
+        // Добавление нового участника (связки лодка-трекер-статус).
+        $('#bt_addRaceConfig').on('click', function() {
+          const data = {
+            raceConfigIdRace: $('#div_raceConfig').data('id_race'),
+            raceConfigBoat: $('#inRaceConfigBoat').data('id_boat'),
+            raceConfigGadget: $('#inRaceConfigGadget').data('id_gadget'),
+            raceConfigStatus: $('#inRaceConfigStatus').val(),
+            raceConfigAbout: $('#inRaceConfigAbout').val()
+          };
+          SMRaces.addConfig(data, tbRaceConfig);
+        });
+        // Удаление участника
+        $('#bt_removeRaceConfig').on('click', function() {
+          const dataRow = tbRaceConfig.row('.selected').data();
+          // dataRow[0] == id row в таблице и базе данных
+           SMRaces.removeConfig(dataRow[0], $('#div_raceConfig').data('id_race'), tbRaceConfig);
+        });
+        // Настройка single-selection
+        $('#tb_raceConfig').on( 'click', 'tr', function () {
+          if ( $(this).hasClass('selected') ) {
+            $(this).removeClass('selected');
+          } else {
+            tbRaceConfig.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+          }
+        });
+      });
+    }
 
     // Инициализация виджета главного меню
-    $(document).ready( function() {
-      $('#ul_mainMenu').menu({
-        select: function( event, ui) {
-          // Показать список трекеров
-          if(ui.item[0].id == 'li_gadgets'){
-            // Для управления этой таблицей нужно скрыть остальные
-            hideAll();
-            SMGadgets.getall(tbGadgets);
-            $('#div_tableGadgets').show();
+    function initMainMenu() {
+      $(document).ready( function() {
+        $('#ul_mainMenu').menu({
+          select: function( event, ui) {
+            // Показать список трекеров
+            if(ui.item[0].id == 'li_gadgets'){
+              // Для управления этой таблицей нужно скрыть остальные
+              hideAll();
+              SMGadgets.getall(tbGadgets);
+              $('#div_tableGadgets').show();
+            }
+            // Показать список гонок
+            if(ui.item[0].id == 'li_races'){
+              hideAll();
+              SMRaces.getall(tbRaces);
+              $('#div_tableRaces').show();
+            }
+            // Показать список лодок
+            if(ui.item[0].id == 'li_boats'){
+              // Для управления этой таблицей нужно скрыть остальные
+              hideAll();
+              SMBoats.getall(tbBoats);
+              $('#div_tableBoats').show();
+            }
+            // Показать список участников
+            if(ui.item[0].id == 'li_members'){
+              // Для управления этой таблицей нужно скрыть остальные
+              hideAll();
+              // Показываем список учасников, если загружена гонка
+              $('#div_listMembers').show();
+            }
+            //Скрыть меню, после выбора какого-либо пункта
+            $('#ul_mainMenu').hide();
           }
-          // Показать список гонок
-          if(ui.item[0].id == 'li_races'){
-            hideAll();
-            SMRaces.getall(tbRaces);
-            $('#div_tableRaces').show();
-          }
-          // Показать список лодок
-          if(ui.item[0].id == 'li_boats'){
-            // Для управления этой таблицей нужно скрыть остальные
-            hideAll();
-            SMBoats.getall(tbBoats);
-            $('#div_tableBoats').show();
-          }
-          // Показать список участников
-          if(ui.item[0].id == 'li_members'){
-            // Для управления этой таблицей нужно скрыть остальные
-            hideAll();
-            // Показываем список учасников, если загружена гонка
-            $('#div_listMembers').show();
-          }
-          //Скрыть меню, после выбора какого-либо пункта
-          $('#ul_mainMenu').hide();
-        }
-      }).hide();
-    });
+        }).hide();
+      });
+    }
 
     // Скрывает все окна таблиц
     function hideAll(){
@@ -378,7 +472,30 @@
         // Показать главное окно настройки конфигурации
         $('#div_raceConfig').show();
       }
-    };
+    }
+
+    // Настройка single-selection
+    function enableSingleSelection(tbBody, tbVar) {
+      $(tbBody).on( 'click', 'tr', function () {
+        if ( $(this).hasClass('selected') ) {
+          $(this).removeClass('selected');
+        } else {
+          tbVar.$('tr.selected').removeClass('selected');
+          $(this).addClass('selected');
+        }
+      });
+    }
+
+    // Инициализация основных блоков интерфейса
+    initTableBoats();
+    initRaceConfigBoats();
+    initTableGadgets()
+    initRaceConfigGadgets();
+    initTableRaces();
+    initListMembers();
+    initRaceConfig()
+    initMainMenu();
+
   </script>
   <style>
       @import url(./Build/Cesium/Widgets/widgets.css);
@@ -464,9 +581,10 @@
     </div>
   </div>
   <div id="div_listMembers" class="div_tables">
-      <table id="tb_listMembers" class="display tb_info"></table>
+      <table id="tb_listMembers" class="display tb_info compact"></table>
       <div id="div_editListMembers">
-          <input id="bt_listMembersSelectAll" name="bt_listMembersSelectAll" type="button" class="buttons">SelectAll</input>
+          <input id="bt_listMembersSelectAll" name="bt_listMembersSelectAll" type="button" class="buttons" value="SelectAll"/>
+          <input id="bt_listMembersTrack" name="bt_listMembersTrack" type="button" class="buttons" value="Track"/>
       </div>
   </div>
   <div id="div_raceConfigBoats" class="div_config_tables">
