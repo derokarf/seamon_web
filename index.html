@@ -9,6 +9,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
   <title>Hello World!</title>
   <script src="Build/Cesium/Cesium.js"></script>
+  <script src="SMDefSettings.js"></script>
   <script src="SMUtils.js"></script>
   <script src="SMTracks.js"></script>
   <script src="SMGraph.js"></script>
@@ -28,7 +29,7 @@
   const SMHeaders = new Headers();
   SMHeaders.append('Content-Type','application/json');
   SMHeaders.append('Access-Control-Request-Headers','X-Custom-Header');
-  const urlApi = 'http://localhost:8085/api';
+
   let tbBoats;
   let tbGadgets;
   let tbRaces;
@@ -37,10 +38,13 @@
   let tbRaceConfigGadgets;
   let tbListMembers;
   let Race;
+  let iterTime;
+  let dataListMembers;
 
     $(document).ready( function() {
       // Инициализация кнопок
       $( '.buttons' ).button();
+      $( '.checkboxes' ).checkboxradio();
 
       // Инициализация виджетов JQuery UI
       // Главная кнопка меню, левый верхний угол
@@ -240,24 +244,19 @@
           Race = new SMRaces.Race(dataRow[0]);
           Race.load().then(() => {
 
-            //////////!!!!!!!!!КОСТЫЛЬ!!!!!!!!!!!!///////////
-            Race.boats.forEach((item, i, arr) => {
-              item.track.forEach((row, j, list) => {
-                row.lng = SMUtils.latlng2deg(row.lng);
-                row.lat = SMUtils.latlng2deg(row.lat);
-              });
-            });
-
-            ////////////////////////////////////////////////
-
             // Записываем участников гонки в таблицу;
             hideAll();
             tbListMembers.clear();
-            tbListMembers.rows.add(Race.getListMembers());
+            dataListMembers = Race.getListMembers();
+            tbListMembers.rows.add(dataListMembers);
             tbListMembers.draw();
             $('#div_listMembers').show();
-            // Устанавливаем границы TimeLine в соответствие с Begin и End для гонки.
-            viewer.timeline.zoomTo(Cesium.JulianDate.fromDate(Race.begin), Cesium.JulianDate.fromDate(Race.end));
+
+            //Загружаем трек для каждой лодки
+            Race.boats.forEach((item, i, arr) => {
+              viewer.dataSources.add(Cesium.CzmlDataSource.load(item.track));
+            });
+
           });
         });
         // Обработка события click на кнопке удаления записи в строке таблицы
@@ -280,18 +279,13 @@
           paging:         false,
           columns: [
             { title: 'ID', visible: false, searchable: false },
-            {title: '№'},
-            { title: 'Name'}
+            { title: '№' },
+            { title: 'Name' },
+            { title: 'Speed' }
           ]
         });
         //Инициализация кнопок
         const btListMembersSelectAll = $('#bt_listMembersSelectAll').button();
-
-        // Обработка события click на кнопке загрузки трекера
-        $('#bt_listMembersTrack').on('click', (event) => {
-          const dataRow = tbListMembers.row('.selected').data();
-          showTrack(dataRow[0]);
-        });
 
         //single-selection
         enableSingleSelection('#tb_listMembers', tbListMembers);
@@ -300,48 +294,94 @@
         $('#tb_listMembers').on( 'click', 'tr', function () {
           // Получаем id лодки в базе
           const index = tbListMembers.row(this).data()[1] - 1;
-          // Выясняем текущее время на TimeLine.
-          const timeMark = Cesium.JulianDate.toDate(viewer.clock.currentTime).getTime();
-          ///!!!!!!!!!!!!!!
-          //// ЗАМЕНИТЬ ЭФФЕКТИВНЫМ МЕТОДОМ ПОИСКА!
-          ////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-          // Ищем ближайшую точку на треке.
-          let delta;
-          let minDelta = Number.MAX_VALUE;
-          let result;
-          for(let i=0; i < Race.boats[index].track.length; i++){
-            delta = Math.abs( Race.boats[index].track[i].ttdd - timeMark );
-            if(delta < minDelta){
-              minDelta = delta;
-              result = i;
-            }
+          const nowBoat = Race.boats[index];
+          if ( nowBoat.cs_mark != null ) {
+            const offset = new Cesium.HeadingPitchRange(0, -Cesium.Math.PI_OVER_FOUR, 1000);
+            viewer.zoomTo(nowBoat.cs_mark, offset);
           }
-          // Обозначаем точку на карте флагом.
-          const pointGPS = Race.boats[index].track[result];
-          // Удаляем старый флаг.
-          if( Race.boats[index].cs_mark != null ){
-            viewer.entities.remove(Race.boats[index].cs_mark);
-          }
-          Race.boats[index].cs_mark = SMGraph.drawFlag(pointGPS, viewer);
-          viewer.zoomTo(viewer.entities);
         });
 
       });
     }
 
-    // Показывает трек выбранной гонки
-    function showTrack(id) {
-      Race.boats.forEach((item, i, arr) => {
-        if(item.id == id){
-          const tmpTrack = [];
-          item.track.forEach((row, j, list) => {
-            tmpTrack.push(row.lng);
-            tmpTrack.push(row.lat);
-          });
-          SMGraph.drawTrack(tmpTrack, viewer);
-          return;
+    function showAllBoat() {
+      // Получаем id лодки в базе
+      for(let i=0; i < Race.boats.length; i++){
+        let nowBoat = Race.boats[i];
+        // Выясняем текущее время на TimeLine.
+        const timeMark = Cesium.JulianDate.toDate(viewer.clock.currentTime).getTime();
+        ///!!!!!!!!!!!!!!
+        //// ЗАМЕНИТЬ ЭФФЕКТИВНЫМ МЕТОДОМ ПОИСКА!
+        ////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // Ищем ближайшую точку на треке.
+        let delta;
+        let minDelta = Number.MAX_VALUE;
+        let result;
+        for(let i=0; i < nowBoat.track.length; i++){
+          delta = Math.abs( nowBoat.track[i].ttdd - timeMark );
+          if(delta < minDelta){
+            minDelta = delta;
+            result = i;
+          }
+        }
+        // Обозначаем точку на карте флагом.
+        const pointGPS = nowBoat.track[result];
+        // Удаляем старый флаг.
+        if ( nowBoat.cs_mark != null ) {
+          viewer.entities.remove( nowBoat.cs_mark );
+        }
+        nowBoat.cs_mark = SMGraph.drawFlag( pointGPS, viewer );
+        // Показываем трек, если нужно
+        if ( $( '#chk_listMembersTrack' ).is( ":checked" ) ) {
+          // Удаляем предыдущий трек, если нужно.
+          if( nowBoat.cs_track != null ) {
+            viewer.scene.primitives.remove( nowBoat.cs_track );
+          }
+          // Рисуем трек.
+          nowBoat.cs_track = showTrack( i, parseInt( pointGPS.ttdd ));
+        }
+        showBoatsInfo( i, pointGPS );
+        tbListMembers.clear();
+        tbListMembers.rows.add(dataListMembers);
+        tbListMembers.draw();
+        //const target = Cesium.Cartesian3.fromDegrees(pointGPS.lng, pointGPS.lat);
+        //const offset = new Cesium.HeadingPitchRange(0, -Cesium.Math.PI_OVER_FOUR, 1000);
+        //viewer.zoomTo(nowBoat.cs_mark, offset);
+      }
+    }
+
+    // Отображает различную информацию о лодке на текущий момент времени
+    function showBoatsInfo( index, pointGPS ) {
+      dataListMembers[index][3] = pointGPS.speed;
+    }
+
+    /**
+    * @description Показывает трек выбранной гонки.
+    * @params {Integer} Индекс лодки.
+    * @param {unixtime} star Начало трека.
+    * @param {unixtime} stop Конец трека.
+    * @return {Primitive} Возвращает объект трека.
+    */
+    function showTrack( index, stop, start ) {
+      const tmpTrack = [];
+      const item = Race.boats[index];
+      // Если начало или конец трека не заданы, берем для этого параметра
+      // время начала или окончания гонки.
+      if( start == undefined ){
+        start = Race.begin.getTime();
+      }
+      if( stop == undefined ){
+        stop = Race.end.getTime();
+      }
+      // Выбираем координаты из заданного временного интервала
+      item.track.forEach(( row, j, list ) => {
+        if(( start <= row.ttdd ) && ( stop >= row.ttdd )) {
+          tmpTrack.push( row.lng );
+          tmpTrack.push( row.lat );
         }
       });
+      // Рисуем трек.
+      return SMGraph.drawTrack(tmpTrack, viewer);
     }
 
     //Инициализация виджета конфигурации гонки
@@ -486,6 +526,15 @@
       });
     }
 
+    function mainEventHandler(){
+      // Проверка прошедшего времени с последней итерации
+      if( Cesium.JulianDate.secondsDifference( viewer.clock.currentTime,
+        iterTime ) >= 5){
+        showAllBoat();
+        Cesium.JulianDate.addSeconds( iterTime, 5, iterTime );
+      }
+    }
+
     // Инициализация основных блоков интерфейса
     initTableBoats();
     initRaceConfigBoats();
@@ -584,7 +633,8 @@
       <table id="tb_listMembers" class="display tb_info compact"></table>
       <div id="div_editListMembers">
           <input id="bt_listMembersSelectAll" name="bt_listMembersSelectAll" type="button" class="buttons" value="SelectAll"/>
-          <input id="bt_listMembersTrack" name="bt_listMembersTrack" type="button" class="buttons" value="Track"/>
+          <input id="chk_listMembersTrack" name="chk_listMembersTrack" type="checkbox" class="checkboxes"/>
+          <label for="chk_listMembersTrack">Track</label>
       </div>
   </div>
   <div id="div_raceConfigBoats" class="div_config_tables">
@@ -594,8 +644,11 @@
       <table id="tb_raceConfigGadgets" class="display tb_config"></table>
   </div>
   <script>
-
-  const viewer = new Cesium.Viewer('cesiumContainer');
+    // Cesium Objects
+    const viewer = new Cesium.Viewer('cesiumContainer', {
+      shouldAnimate : true
+    });
+    // viewer.clock.shouldAnimate = true;
   </script>
 </body>
 </html>

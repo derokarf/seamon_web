@@ -6,13 +6,19 @@ const SMGraph = (function() {
     init(viewer) {
       this.viewer = viewer;
     },
+    /**
+    * @description Отрисовывает трек.
+    * @param {array} Массив GPS координат.
+    * @param {Object} Cesium Viewer
+    * @return {Primitive} Возвращает объект трека.
+    */
     drawTrack(listGps, viewer) {
       const lineTrack = new Cesium.PolylineCollection();
       lineTrack.add({
         positions: Cesium.Cartesian3.fromDegreesArray(listGps),
         width: 4
       });
-      viewer.scene.primitives.add(lineTrack);
+      return viewer.scene.primitives.add(lineTrack);
     },
     /**
     * @description Ставит визуальный "флаг" на карте.

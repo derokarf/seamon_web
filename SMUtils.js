@@ -54,17 +54,6 @@ const SMUtils = (function() {
       }
       return arrArr;
     },
-    /** @description Конвертирует GPS координаты из формата градусы минуты секунды
-    /* в градусы double
-    /* @param {value} широта или долгода в "градусы минуты секунды"
-    /* @return {float} широта или долгота во float
-    */
-    latlng2deg (value) {
-      value += '';
-      const degrees = value.slice(0, value.indexOf('.') - 2);
-      const minutes = value.slice(value.indexOf('.') - 2);
-      return parseInt(degrees, 10) + (parseFloat(minutes, 10) / 60);
-    },
     /** @description Конвертируем результат из массива объектов
     * в "массив массивов" для DataTables
     * @param {objArray} "Массив объектов"

@@ -2,7 +2,7 @@
 // Тестовые данные start = 1530269726000
 // stop = 1530967303000
 const SMTracks = (function() {
-  const MON_URL = 'http://localhost:8085/api/track';
+  const MON_URL = `${urlApi}/track`;
   return {
     /** @description Загружает трек отдельного трекера из определенной гонки
      *               и передает его обработчику результата (handler).

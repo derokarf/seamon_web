@@ -67,7 +67,7 @@ const SMRaces = (function() {
           getListMembers() {
             const members = [];
             this.boats.forEach((boat, i, arr) => {
-              members.push([ boat.id, i+1, boat.name ]);
+              members.push([ boat.id, i+1, boat.name, 0 ]);
             });
             return members;
           }
